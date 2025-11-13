@@ -5,6 +5,13 @@
 #include "pizza.h"
 #include <pthread.h>
 #include <unistd.h>
+#ifdef _WIN32
+// Windows does not have rand_r, so we implement a simple equivalent
+int rand_r(unsigned int* seed) {
+	*seed = (*seed * 1103515245 + 12345) % (1u << 31);
+	return *seed;
+}
+#endif
 
 //variables to store the number of free employees of the pizzeria
 
