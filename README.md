@@ -1,4 +1,4 @@
-# Pizza Store — Multithreaded Simulation
+# Pizza Store 
 
 University assignment for the **Operating Systems** course, **4th semester**, at the
 **Athens University of Economics and Business (AUEB)**.
