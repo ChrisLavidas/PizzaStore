@@ -61,6 +61,3 @@ Set the number of customers, the seed and the speed, then press Start to watch o
 the stations while the live statistics update. The visualizer is for illustration only — the actual
 implementation is the C backend in `pizza.c`.
 
-## Author
-
-Christos Lavidas — Athens University of Economics and Business (AUEB)
