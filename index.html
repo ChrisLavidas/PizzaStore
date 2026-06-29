@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🍕 Pizza Store — Visual Simulator</title>
+<style>
+  :root {
+    --bg: #1b1023;
+    --panel: #2a1a33;
+    --panel2: #34203f;
+    --accent: #ff5d8f;
+    --accent2: #ffb86b;
+    --green: #4ade80;
+    --red: #f87171;
+    --text: #f5e9f0;
+    --muted: #b89bc4;
+    --border: #4a2d57;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(circle at top, #2a1633, var(--bg));
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    padding: 24px 16px 8px;
+  }
+  header h1 { margin: 0; font-size: 2rem; }
+  header p { margin: 6px 0 0; color: var(--muted); font-size: .9rem; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    justify-content: center;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .field input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    width: 110px;
+    font-size: 1rem;
+  }
+  button {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #2a0e1a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform .1s;
+  }
+  button:hover { transform: translateY(-2px); }
+  button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  button.ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+
+  .stations {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .station {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    min-height: 150px;
+    position: relative;
+  }
+  .station h3 { margin: 0 0 4px; font-size: .85rem; }
+  .station .icon { font-size: 1.6rem; }
+  .station .cap {
+    font-size: .72rem;
+    color: var(--muted);
+    margin: 4px 0 8px;
+  }
+  .bar {
+    height: 6px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .bar > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--accent2));
+    transition: width .3s;
+  }
+  .queue {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    justify-content: center;
+    min-height: 24px;
+  }
+  .pizza {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    animation: pop .3s ease;
+  }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat .v { font-size: 1.6rem; font-weight: 700; }
+  .stat .l { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
+  .stat.profit .v { color: var(--green); }
+  .stat.fail .v { color: var(--red); }
+
+  .log {
+    background: #120a18;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    height: 220px;
+    overflow-y: auto;
+    font-family: "Consolas", monospace;
+    font-size: .82rem;
+    line-height: 1.5;
+  }
+  .log .ok { color: var(--green); }
+  .log .bad { color: var(--red); }
+  .log .info { color: var(--muted); }
+  .footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 16px; }
+  .footer code { background: var(--panel); padding: 2px 6px; border-radius: 5px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🍕 Pizza Store — Visual Simulator</h1>
+  <p>Οπτικοποίηση του multithreaded backend σε C — οι παραγγελίες περνάνε από κάθε σταθμό όπως στο <code>pizza.c</code></p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="field">
+      <label>Πελάτες</label>
+      <input type="number" id="customers" value="15" min="1" max="100" />
+    </div>
+    <div class="field">
+      <label>Seed</label>
+      <input type="number" id="seed" value="42" />
+    </div>
+    <div class="field">
+      <label>Ταχύτητα (x)</label>
+      <input type="number" id="speed" value="40" min="1" max="500" />
+    </div>
+    <button id="startBtn">▶ Start</button>
+    <button id="resetBtn" class="ghost">⟳ Reset</button>
+  </div>
+
+  <div class="stations" id="stations"></div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="log" id="log"></div>
+</div>
+
+<div class="footer">
+  Frontend-only demo. Οι παράμετροι (αριθμός υπαλλήλων, τιμές, πιθανότητες) είναι ίδιες με το <code>pizza.h</code>.
+  Το backend σε C δεν τροποποιείται.
+</div>
+
+<script>
+// ====== Constants — mirror of pizza.h ======
+const CONFIG = {
+  number_of_telephone_operators: 2,
+  number_of_cooks: 2,
+  number_of_ovens: 10,
+  number_of_packers: 2,
+  number_of_deliverers: 10,
+
+  time_orderhigh: 5,
+  number_orderhigh: 5,
+
+  propability_of_margarita: 0.45,
+  propability_of_pepperone: 0.35,
+  propability_of_special: 0.2,
+
+  time_paymenthigh: 3,
+  propability_of_failure: 0.05,
+
+  cost_of_margarita: 12,
+  cost_of_pepperone: 14,
+  cost_of_special: 15,
+
+  time_of_preparation: 1,
+  time_of_bake: 10,
+  time_of_pack: 1,
+
+  time_orderlow: 1,
+};
+
+const STATIONS = [
+  { key: 'operators',  name: 'Τηλεφωνητές', icon: '📞', cap: 'number_of_telephone_operators' },
+  { key: 'cooks',      name: 'Μάγειρες',    icon: '👨‍🍳', cap: 'number_of_cooks' },
+  { key: 'ovens',      name: 'Φούρνοι',     icon: '🔥', cap: 'number_of_ovens' },
+  { key: 'packers',    name: 'Πακετάρισμα', icon: '📦', cap: 'number_of_packers' },
+  { key: 'deliverers', name: 'Ντελίβερι',   icon: '🛵', cap: 'number_of_deliverers' },
+];
+
+// ====== rand_r equivalent (same LCG as the C Windows fallback) ======
+function makeRand(seed) {
+  let s = seed >>> 0;
+  return function () {
+    s = (Math.imul(s, 1103515245) + 12345) >>> 0;
+    s = s % (1 << 31);
+    return s;
+  };
+}
+
+// ====== State ======
+let state = null;
+let running = false;
+const els = {};
+
+function buildUI() {
+  const sc = document.getElementById('stations');
+  sc.innerHTML = '';
+  STATIONS.forEach(st => {
+    const cap = CONFIG[st.cap];
+    const div = document.createElement('div');
+    div.className = 'station';
+    div.innerHTML = `
+      <div class="icon">${st.icon}</div>
+      <h3>${st.name}</h3>
+      <div class="cap">free: <b id="free-${st.key}">${cap}</b> / ${cap}</div>
+      <div class="bar"><span id="bar-${st.key}" style="width:100%"></span></div>
+      <div class="queue" id="q-${st.key}"></div>
+    `;
+    sc.appendChild(div);
+  });
+
+  const stats = [
+    { id: 'revenue', l: 'Έσοδα ($)', cls: 'profit', v: 0 },
+    { id: 'success', l: 'Επιτυχημένες', cls: '', v: 0 },
+    { id: 'fail', l: 'Ακυρωμένες', cls: 'fail', v: 0 },
+    { id: 'margarita', l: '🍕 Μαργαρίτα', cls: '', v: 0 },
+    { id: 'pepperone', l: '🍕 Πεπερόνι', cls: '', v: 0 },
+    { id: 'special', l: '🍕 Σπέσιαλ', cls: '', v: 0 },
+    { id: 'avgservice', l: 'Μέσος χρόνος', cls: '', v: '–' },
+    { id: 'active', l: 'Ενεργές', cls: '', v: 0 },
+  ];
+  const sd = document.getElementById('stats');
+  sd.innerHTML = '';
+  stats.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'stat ' + s.cls;
+    d.innerHTML = `<div class="v" id="stat-${s.id}">${s.v}</div><div class="l">${s.l}</div>`;
+    sd.appendChild(d);
+  });
+}
+
+function resetState() {
+  state = {
+    free: {
+      operators: CONFIG.number_of_telephone_operators,
+      cooks: CONFIG.number_of_cooks,
+      ovens: CONFIG.number_of_ovens,
+      packers: CONFIG.number_of_packers,
+      deliverers: CONFIG.number_of_deliverers,
+    },
+    queues: { operators: [], cooks: [], ovens: [], packers: [], deliverers: [] },
+    revenue: 0, success: 0, fail: 0,
+    margarita: 0, pepperone: 0, special: 0,
+    sumService: 0, active: 0,
+  };
+  document.getElementById('log').innerHTML = '';
+  refresh();
+}
+
+function refresh() {
+  STATIONS.forEach(st => {
+    const cap = CONFIG[st.cap];
+    const free = state.free[st.key];
+    document.getElementById('free-' + st.key).textContent = free;
+    document.getElementById('bar-' + st.key).style.width = (free / cap * 100) + '%';
+    const q = document.getElementById('q-' + st.key);
+    q.innerHTML = state.queues[st.key].map(p =>
+      `<div class="pizza" title="order #${p.id}" style="background:${p.color}">${p.emoji}</div>`
+    ).join('');
+  });
+  set('revenue', state.revenue);
+  set('success', state.success);
+  set('fail', state.fail);
+  set('margarita', state.margarita);
+  set('pepperone', state.pepperone);
+  set('special', state.special);
+  set('active', state.active);
+  set('avgservice', state.success ? (state.sumService / state.success).toFixed(1) + 'm' : '–');
+}
+function set(id, v) { document.getElementById('stat-' + id).textContent = v; }
+
+function log(msg, cls) {
+  const l = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = cls || '';
+  line.textContent = msg;
+  l.appendChild(line);
+  l.scrollTop = l.scrollHeight;
+}
+
+// scaled sleep — 1 simulated "minute" = (1000/speed) ms
+function sleep(minutes) {
+  const speed = Math.max(1, +document.getElementById('speed').value);
+  return new Promise(r => setTimeout(r, minutes * 1000 / speed));
+}
+
+// occupy a resource (waits if none free) — models pthread_cond_wait
+async function acquire(key, n = 1) {
+  while (state.free[key] < n) { await sleep(0.2); }
+  state.free[key] -= n;
+  refresh();
+}
+function release(key, n = 1) {
+  state.free[key] += n;
+  refresh();
+}
+
+function enqueue(key, p) { state.queues[key].push(p); refresh(); }
+function dequeue(key, p) {
+  state.queues[key] = state.queues[key].filter(x => x !== p);
+  refresh();
+}
+
+const PIZZA_COLORS = { margarita: '#ffd166', pepperone: '#ef476f', special: '#06d6a0' };
+
+async function customer(id, rand) {
+  state.active++; refresh();
+  const startService = performance.now();
+  const token = { id, emoji: '🧾', color: '#8888ff' };
+
+  // --- telephone operator ---
+  enqueue('operators', token);
+  await acquire('operators');
+  dequeue('operators', token);
+
+  const numPizzas = rand() % CONFIG.number_orderhigh + 1;
+  const nMarg = Math.round(numPizzas * CONFIG.propability_of_margarita);
+  const nPep  = Math.round(numPizzas * CONFIG.propability_of_pepperone);
+  const nSpec = Math.round(numPizzas * CONFIG.propability_of_special);
+
+  await sleep(rand() % CONFIG.time_paymenthigh + 1); // payment check
+
+  // 5% failure (1 out of 20) — same as C
+  if (rand() % 20 + 1 === 1) {
+    state.fail++;
+    release('operators');
+    state.active--;
+    log(`Order #${id} got cancelled (πληρωμή απορρίφθηκε)`, 'bad');
+    refresh();
+    return;
+  }
+
+  state.success++;
+  state.revenue += nMarg * CONFIG.cost_of_margarita + nPep * CONFIG.cost_of_pepperone + nSpec * CONFIG.cost_of_special;
+  state.margarita += nMarg; state.pepperone += nPep; state.special += nSpec;
+  release('operators');
+  log(`Order #${id} added — ${numPizzas} pizzes (M:${nMarg} P:${nPep} S:${nSpec})`, 'ok');
+
+  const pizza = { id, emoji: '🍕', color: PIZZA_COLORS.margarita };
+
+  // --- cook ---
+  enqueue('cooks', pizza);
+  await acquire('cooks');
+  await sleep(numPizzas * CONFIG.time_of_preparation);
+  dequeue('cooks', pizza);
+
+  // --- ovens (needs numPizzas ovens) ---
+  enqueue('ovens', pizza);
+  await acquire('ovens', numPizzas);
+  release('cooks');
+  await sleep(CONFIG.time_of_bake);
+  dequeue('ovens', pizza);
+
+  // --- packer ---
+  enqueue('packers', pizza);
+  await acquire('packers');
+  release('ovens', numPizzas);
+  await sleep(numPizzas * CONFIG.time_of_pack);
+  dequeue('packers', pizza);
+  release('packers');
+
+  // --- deliverer ---
+  enqueue('deliverers', pizza);
+  await acquire('deliverers');
+  dequeue('deliverers', pizza);
+  const deliveryTime = rand() % CONFIG.time_orderhigh + 1;
+  await sleep(deliveryTime);          // deliver
+  const endService = performance.now();
+  await sleep(deliveryTime);          // return to store
+  release('deliverers');
+
+  const serviceMin = (endService - startService) / (1000 / Math.max(1, +document.getElementById('speed').value));
+  state.sumService += serviceMin;
+  state.active--;
+  log(`Order #${id} delivered — service ~${serviceMin.toFixed(1)}m`, 'info');
+  refresh();
+}
+
+async function run() {
+  if (running) return;
+  running = true;
+  document.getElementById('startBtn').disabled = true;
+  resetState();
+
+  const n = Math.max(1, Math.min(100, +document.getElementById('customers').value));
+  const seed = +document.getElementById('seed').value || 1;
+  const rand = makeRand(seed);
+
+  log(`▶ Ξεκινά η προσομοίωση: ${n} πελάτες, seed=${seed}`, 'info');
+
+  const tasks = [];
+  for (let i = 1; i <= n; i++) {
+    tasks.push(customer(i, rand));
+    await sleep(rand() % CONFIG.time_orderhigh + 1); // gap between customers
+  }
+  await Promise.all(tasks);
+
+  log('────────────────────────', 'info');
+  log(`Συνολικά έσοδα: ${state.revenue} $`, 'ok');
+  log(`Επιτυχημένες: ${state.success} | Ακυρωμένες: ${state.fail}`, 'info');
+  log(`Πίτσες — Μαργαρίτα:${state.margarita} Πεπερόνι:${state.pepperone} Σπέσιαλ:${state.special}`, 'info');
+  if (state.success) log(`Μέσος χρόνος εξυπηρέτησης: ${(state.sumService / state.success).toFixed(2)}m`, 'info');
+  log('✔ Ολοκληρώθηκε', 'ok');
+
+  running = false;
+  document.getElementById('startBtn').disabled = false;
+}
+
+document.getElementById('startBtn').addEventListener('click', run);
+document.getElementById('resetBtn').addEventListener('click', () => { if (!running) resetState(); });
+
+buildUI();
+resetState();
+</script>
+</body>
+</html>
