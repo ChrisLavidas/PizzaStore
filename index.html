@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="el">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -161,13 +161,13 @@
 <body>
 <header>
   <h1>🍕 Pizza Store — Visual Simulator</h1>
-  <p>Οπτικοποίηση του multithreaded backend σε C — οι παραγγελίες περνάνε από κάθε σταθμό όπως στο <code>pizza.c</code></p>
+  <p>Visualization of the multithreaded C backend — orders flow through each station just like in <code>pizza.c</code></p>
 </header>
 
 <div class="wrap">
   <div class="controls">
     <div class="field">
-      <label>Πελάτες</label>
+      <label>Customers</label>
       <input type="number" id="customers" value="15" min="1" max="100" />
     </div>
     <div class="field">
@@ -175,7 +175,7 @@
       <input type="number" id="seed" value="42" />
     </div>
     <div class="field">
-      <label>Ταχύτητα (x)</label>
+      <label>Speed (x)</label>
       <input type="number" id="speed" value="40" min="1" max="500" />
     </div>
     <button id="startBtn">▶ Start</button>
@@ -190,8 +190,8 @@
 </div>
 
 <div class="footer">
-  Frontend-only demo. Οι παράμετροι (αριθμός υπαλλήλων, τιμές, πιθανότητες) είναι ίδιες με το <code>pizza.h</code>.
-  Το backend σε C δεν τροποποιείται.
+  Frontend-only demo. The parameters (number of employees, prices, probabilities) are the same as in <code>pizza.h</code>.
+  The C backend is not modified.
 </div>
 
 <script>
@@ -225,11 +225,11 @@ const CONFIG = {
 };
 
 const STATIONS = [
-  { key: 'operators',  name: 'Τηλεφωνητές', icon: '📞', cap: 'number_of_telephone_operators' },
-  { key: 'cooks',      name: 'Μάγειρες',    icon: '👨‍🍳', cap: 'number_of_cooks' },
-  { key: 'ovens',      name: 'Φούρνοι',     icon: '🔥', cap: 'number_of_ovens' },
-  { key: 'packers',    name: 'Πακετάρισμα', icon: '📦', cap: 'number_of_packers' },
-  { key: 'deliverers', name: 'Ντελίβερι',   icon: '🛵', cap: 'number_of_deliverers' },
+  { key: 'operators',  name: 'Phone operators', icon: '📞', cap: 'number_of_telephone_operators' },
+  { key: 'cooks',      name: 'Cooks',           icon: '👨‍🍳', cap: 'number_of_cooks' },
+  { key: 'ovens',      name: 'Ovens',           icon: '🔥', cap: 'number_of_ovens' },
+  { key: 'packers',    name: 'Packing',         icon: '📦', cap: 'number_of_packers' },
+  { key: 'deliverers', name: 'Delivery',        icon: '🛵', cap: 'number_of_deliverers' },
 ];
 
 // ====== rand_r equivalent (same LCG as the C Windows fallback) ======
@@ -265,14 +265,14 @@ function buildUI() {
   });
 
   const stats = [
-    { id: 'revenue', l: 'Έσοδα ($)', cls: 'profit', v: 0 },
-    { id: 'success', l: 'Επιτυχημένες', cls: '', v: 0 },
-    { id: 'fail', l: 'Ακυρωμένες', cls: 'fail', v: 0 },
-    { id: 'margarita', l: '🍕 Μαργαρίτα', cls: '', v: 0 },
-    { id: 'pepperone', l: '🍕 Πεπερόνι', cls: '', v: 0 },
-    { id: 'special', l: '🍕 Σπέσιαλ', cls: '', v: 0 },
-    { id: 'avgservice', l: 'Μέσος χρόνος', cls: '', v: '–' },
-    { id: 'active', l: 'Ενεργές', cls: '', v: 0 },
+    { id: 'revenue', l: 'Revenue ($)', cls: 'profit', v: 0 },
+    { id: 'success', l: 'Successful', cls: '', v: 0 },
+    { id: 'fail', l: 'Cancelled', cls: 'fail', v: 0 },
+    { id: 'margarita', l: '🍕 Margarita', cls: '', v: 0 },
+    { id: 'pepperone', l: '🍕 Pepperoni', cls: '', v: 0 },
+    { id: 'special', l: '🍕 Special', cls: '', v: 0 },
+    { id: 'avgservice', l: 'Avg. service time', cls: '', v: '–' },
+    { id: 'active', l: 'Active', cls: '', v: 0 },
   ];
   const sd = document.getElementById('stats');
   sd.innerHTML = '';
@@ -380,7 +380,7 @@ async function customer(id, rand) {
     state.fail++;
     release('operators');
     state.active--;
-    log(`Order #${id} got cancelled (πληρωμή απορρίφθηκε)`, 'bad');
+    log(`Order #${id} got cancelled (payment declined)`, 'bad');
     refresh();
     return;
   }
@@ -389,7 +389,7 @@ async function customer(id, rand) {
   state.revenue += nMarg * CONFIG.cost_of_margarita + nPep * CONFIG.cost_of_pepperone + nSpec * CONFIG.cost_of_special;
   state.margarita += nMarg; state.pepperone += nPep; state.special += nSpec;
   release('operators');
-  log(`Order #${id} added — ${numPizzas} pizzes (M:${nMarg} P:${nPep} S:${nSpec})`, 'ok');
+  log(`Order #${id} added — ${numPizzas} pizzas (M:${nMarg} P:${nPep} S:${nSpec})`, 'ok');
 
   const pizza = { id, emoji: '🍕', color: PIZZA_COLORS.margarita };
 
@@ -441,7 +441,7 @@ async function run() {
   const seed = +document.getElementById('seed').value || 1;
   const rand = makeRand(seed);
 
-  log(`▶ Ξεκινά η προσομοίωση: ${n} πελάτες, seed=${seed}`, 'info');
+  log(`▶ Starting simulation: ${n} customers, seed=${seed}`, 'info');
 
   const tasks = [];
   for (let i = 1; i <= n; i++) {
@@ -451,11 +451,11 @@ async function run() {
   await Promise.all(tasks);
 
   log('────────────────────────', 'info');
-  log(`Συνολικά έσοδα: ${state.revenue} $`, 'ok');
-  log(`Επιτυχημένες: ${state.success} | Ακυρωμένες: ${state.fail}`, 'info');
-  log(`Πίτσες — Μαργαρίτα:${state.margarita} Πεπερόνι:${state.pepperone} Σπέσιαλ:${state.special}`, 'info');
-  if (state.success) log(`Μέσος χρόνος εξυπηρέτησης: ${(state.sumService / state.success).toFixed(2)}m`, 'info');
-  log('✔ Ολοκληρώθηκε', 'ok');
+  log(`Total revenue: ${state.revenue} $`, 'ok');
+  log(`Successful: ${state.success} | Cancelled: ${state.fail}`, 'info');
+  log(`Pizzas — Margarita:${state.margarita} Pepperoni:${state.pepperone} Special:${state.special}`, 'info');
+  if (state.success) log(`Average service time: ${(state.sumService / state.success).toFixed(2)}m`, 'info');
+  log('✔ Completed', 'ok');
 
   running = false;
   document.getElementById('startBtn').disabled = false;
