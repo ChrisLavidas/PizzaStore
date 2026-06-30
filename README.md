@@ -46,7 +46,16 @@ Run with two arguments — the number of customers and a random seed:
 ./pizza 15 42
 ```
 
+Both arguments are required. Running the program without them will crash immediately,
+since it reads the customer count and seed from the command line.
+
 On Windows use WSL, MSYS2/MinGW or Cygwin (a Windows-compatible `rand_r` is already included).
+After compiling to `pizza.exe`, you can run it straight from the Command Prompt (`cmd`):
+
+```cmd
+gcc pizza.c -o pizza.exe -lpthread -lm
+pizza.exe 15 42
+```
 
 ## Web visualizer
 
