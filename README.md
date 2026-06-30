@@ -50,13 +50,6 @@ gcc pizza.c -o pizza.exe -lpthread -lm
 pizza.exe 15 42
 ```
 
-### Linux / WSL / macOS
-
-```bash
-gcc pizza.c -o pizza -lpthread -lm
-./pizza 15 42
-```
-
 ## Web visualizer
 
 Just double-click `index.html` to open it in a browser, or serve it locally:
