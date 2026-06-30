@@ -34,27 +34,27 @@ orders, and the average/maximum service and cooling times.
 
 ## Building and running
 
-Compile with a C compiler that supports pthreads:
+You need a C compiler that supports pthreads (MSYS2/MinGW, Cygwin or WSL on Windows;
+a Windows-compatible `rand_r` is already included).
 
-```bash
-gcc pizza.c -o pizza -lpthread -lm
-```
+The program takes two arguments — the number of customers and a random seed. Both are
+required; running it without them crashes immediately, since it reads them from the
+command line.
 
-Run with two arguments — the number of customers and a random seed:
+### Windows (Command Prompt)
 
-```bash
-./pizza 15 42
-```
-
-Both arguments are required. Running the program without them will crash immediately,
-since it reads the customer count and seed from the command line.
-
-On Windows use WSL, MSYS2/MinGW or Cygwin (a Windows-compatible `rand_r` is already included).
-After compiling to `pizza.exe`, you can run it straight from the Command Prompt (`cmd`):
+Compile to `pizza.exe`, then run it directly — note there is no `./` prefix in `cmd`:
 
 ```cmd
 gcc pizza.c -o pizza.exe -lpthread -lm
 pizza.exe 15 42
+```
+
+### Linux / WSL / macOS
+
+```bash
+gcc pizza.c -o pizza -lpthread -lm
+./pizza 15 42
 ```
 
 ## Web visualizer

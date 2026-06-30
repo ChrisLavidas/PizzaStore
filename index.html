@@ -3,168 +3,219 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🍕 Pizza Store — Visual Simulator</title>
+<title>Pizza Store Simulator</title>
 <style>
   :root {
-    --bg: #1b1023;
-    --panel: #2a1a33;
-    --panel2: #34203f;
-    --accent: #ff5d8f;
-    --accent2: #ffb86b;
-    --green: #4ade80;
-    --red: #f87171;
-    --text: #f5e9f0;
-    --muted: #b89bc4;
-    --border: #4a2d57;
+    --bg: #0c0a14;
+    --bg2: #130f1f;
+    --panel: #17131f;
+    --panel2: #1e1929;
+    --border: rgba(255, 255, 255, 0.07);
+    --border2: rgba(255, 255, 255, 0.12);
+    --text: #ECEAF2;
+    --muted: #8a839c;
+    --faint: #5e576e;
+    --accent: #ff5470;
+    --accent2: #ffb547;
+    --green: #45e0a0;
+    --red: #ff5470;
+    --blue: #6aa6ff;
+    --shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.8);
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     margin: 0;
-    font-family: "Segoe UI", system-ui, sans-serif;
-    background: radial-gradient(circle at top, #2a1633, var(--bg));
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
     color: var(--text);
+    background:
+      radial-gradient(900px 500px at 12% -8%, rgba(255, 84, 112, 0.10), transparent 60%),
+      radial-gradient(800px 500px at 100% 0%, rgba(255, 181, 71, 0.08), transparent 55%),
+      radial-gradient(900px 700px at 50% 120%, rgba(106, 166, 255, 0.07), transparent 60%),
+      linear-gradient(180deg, var(--bg2), var(--bg));
     min-height: 100vh;
+    letter-spacing: .2px;
   }
-  header {
-    text-align: center;
-    padding: 24px 16px 8px;
-  }
-  header h1 { margin: 0; font-size: 2rem; }
-  header p { margin: 6px 0 0; color: var(--muted); font-size: .9rem; }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 48px; }
 
+  header { margin-bottom: 26px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .mark {
+    width: 46px; height: 46px; flex: 0 0 46px;
+    border-radius: 14px;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 10px 24px -8px rgba(255, 84, 112, 0.6);
+    color: #1a0c12;
+  }
+  .brand .mark svg { width: 26px; height: 26px; }
+  header h1 {
+    margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: -.3px;
+  }
+  header .sub { margin: 2px 0 0; color: var(--muted); font-size: .82rem; }
+
+  /* ---- controls ---- */
   .controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: flex-end;
-    justify-content: center;
-    background: var(--panel);
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+    background: linear-gradient(180deg, var(--panel2), var(--panel));
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: .68rem; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 1.2px; font-weight: 600;
+  }
+  .field input {
+    background: #100c19;
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 11px;
+    width: 104px;
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 84, 112, 0.18);
+  }
+  .spacer { flex: 1 1 auto; }
+  button {
+    font-family: inherit;
+    border: none;
+    font-weight: 700;
+    padding: 11px 22px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: .95rem;
+    transition: transform .12s ease, box-shadow .2s, opacity .2s;
+  }
+  .btn-start {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #1a0c12;
+    box-shadow: 0 12px 26px -10px rgba(255, 84, 112, 0.7);
+  }
+  .btn-start:hover:not(:disabled) { transform: translateY(-2px); }
+  .btn-ghost {
+    background: var(--panel2); color: var(--text);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--faint); transform: translateY(-2px); }
+  button:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ---- stations ---- */
+  .stations {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 22px;
+  }
+  .station {
+    background: linear-gradient(180deg, var(--panel2), var(--panel));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 14px;
+    text-align: center;
+    min-height: 168px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .station::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: .65;
+  }
+  .station .badge {
+    width: 40px; height: 40px; margin: 4px auto 10px;
+    border-radius: 12px; display: grid; place-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border2);
+    color: var(--accent2);
+  }
+  .station .badge svg { width: 22px; height: 22px; }
+  .station h3 { margin: 0; font-size: .82rem; font-weight: 600; letter-spacing: .2px; }
+  .station .cap { font-size: .72rem; color: var(--muted); margin: 5px 0 10px; font-variant-numeric: tabular-nums; }
+  .station .cap b { color: var(--text); }
+  .bar {
+    height: 7px; background: #100c19; border-radius: 6px; overflow: hidden; margin-bottom: 10px;
+    border: 1px solid var(--border);
+  }
+  .bar > span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--accent2));
+    transition: width .35s ease;
+  }
+  .queue { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; min-height: 22px; }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    box-shadow: 0 0 8px var(--dot, var(--accent));
+    animation: pop .3s ease;
+  }
+  @keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* ---- stats ---- */
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px; margin-bottom: 22px;
+  }
+  .stat {
+    background: linear-gradient(180deg, var(--panel2), var(--panel));
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 16px;
-    margin-bottom: 20px;
+    box-shadow: var(--shadow);
   }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-  .field input {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 8px 10px;
-    border-radius: 8px;
-    width: 110px;
-    font-size: 1rem;
-  }
-  button {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #2a0e1a;
-    border: none;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: transform .1s;
-  }
-  button:hover { transform: translateY(-2px); }
-  button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-  button.ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
-
-  .stations {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .station {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px;
-    text-align: center;
-    min-height: 150px;
-    position: relative;
-  }
-  .station h3 { margin: 0 0 4px; font-size: .85rem; }
-  .station .icon { font-size: 1.6rem; }
-  .station .cap {
-    font-size: .72rem;
-    color: var(--muted);
-    margin: 4px 0 8px;
-  }
-  .bar {
-    height: 6px;
-    background: var(--bg);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
-  .bar > span {
-    display: block;
-    height: 100%;
-    background: linear-gradient(90deg, var(--green), var(--accent2));
-    transition: width .3s;
-  }
-  .queue {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    justify-content: center;
-    min-height: 24px;
-  }
-  .pizza {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    font-size: 12px;
-    display: flex; align-items: center; justify-content: center;
-    animation: pop .3s ease;
-  }
-  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
-
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .stat {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-  }
-  .stat .v { font-size: 1.6rem; font-weight: 700; }
-  .stat .l { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
+  .stat .v { font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 7px; font-weight: 600; }
   .stat.profit .v { color: var(--green); }
   .stat.fail .v { color: var(--red); }
 
+  /* ---- log ---- */
   .log {
-    background: #120a18;
+    background: #0a0710;
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px;
-    height: 220px;
+    border-radius: 14px;
+    padding: 14px 16px;
+    height: 230px;
     overflow-y: auto;
-    font-family: "Consolas", monospace;
+    font-family: "JetBrains Mono", "Consolas", ui-monospace, monospace;
     font-size: .82rem;
-    line-height: 1.5;
+    line-height: 1.65;
+    box-shadow: var(--shadow);
   }
+  .log::-webkit-scrollbar { width: 9px; }
+  .log::-webkit-scrollbar-thumb { background: var(--panel2); border-radius: 8px; }
   .log .ok { color: var(--green); }
   .log .bad { color: var(--red); }
   .log .info { color: var(--muted); }
-  .footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 16px; }
-  .footer code { background: var(--panel); padding: 2px 6px; border-radius: 5px; }
+  .log .head { color: var(--text); font-weight: 600; }
+  .log .rule { color: var(--faint); }
+
+  @media (max-width: 720px) {
+    .stations { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>🍕 Pizza Store — Visual Simulator</h1>
-  <p>Visualization of the multithreaded C backend — orders flow through each station just like in <code>pizza.c</code></p>
-</header>
-
 <div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7l9-3 9 3-9 16z"/><circle cx="10" cy="9" r="1"/><circle cx="13.5" cy="12.5" r="1"/><circle cx="9.5" cy="14" r="1"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Pizza Store Simulator</h1>
+        <p class="sub">Multithreaded C backend, visualized</p>
+      </div>
+    </div>
+  </header>
+
   <div class="controls">
     <div class="field">
       <label>Customers</label>
@@ -178,8 +229,9 @@
       <label>Speed (x)</label>
       <input type="number" id="speed" value="40" min="1" max="500" />
     </div>
-    <button id="startBtn">▶ Start</button>
-    <button id="resetBtn" class="ghost">⟳ Reset</button>
+    <div class="spacer"></div>
+    <button id="startBtn" class="btn-start">Start</button>
+    <button id="resetBtn" class="btn-ghost">Reset</button>
   </div>
 
   <div class="stations" id="stations"></div>
@@ -187,11 +239,6 @@
   <div class="stats" id="stats"></div>
 
   <div class="log" id="log"></div>
-</div>
-
-<div class="footer">
-  Frontend-only demo. The parameters (number of employees, prices, probabilities) are the same as in <code>pizza.h</code>.
-  The C backend is not modified.
 </div>
 
 <script>
@@ -224,12 +271,21 @@ const CONFIG = {
   time_orderlow: 1,
 };
 
+// inline SVG icons (no emojis)
+const ICONS = {
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0"/><rect x="2" y="12" width="4" height="7" rx="1.5"/><rect x="18" y="12" width="4" height="7" rx="1.5"/><path d="M20 19a3 3 0 0 1-3 3h-3"/></svg>',
+  chef: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14v6h12v-6"/><path d="M18 14a4 4 0 0 0 .4-7.96A5 5 0 0 0 9 4.6 4 4 0 0 0 6 14z"/><path d="M9 17h6"/></svg>',
+  flame: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1.2 3 4 4.2 4 8a4 4 0 0 1-8 0c0-1.6.6-2.6 1.2-3.2.4 1 1.3 1.5 1.3 1.5C11 7 11.4 4.6 12 3z"/></svg>',
+  box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4"/><path d="M12 11v10"/></svg>',
+  scooter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M8.4 18h7.2M18 18l-2.6-9H13"/><path d="M4 9h5l2.2 5"/></svg>',
+};
+
 const STATIONS = [
-  { key: 'operators',  name: 'Phone operators', icon: '📞', cap: 'number_of_telephone_operators' },
-  { key: 'cooks',      name: 'Cooks',           icon: '👨‍🍳', cap: 'number_of_cooks' },
-  { key: 'ovens',      name: 'Ovens',           icon: '🔥', cap: 'number_of_ovens' },
-  { key: 'packers',    name: 'Packing',         icon: '📦', cap: 'number_of_packers' },
-  { key: 'deliverers', name: 'Delivery',        icon: '🛵', cap: 'number_of_deliverers' },
+  { key: 'operators',  name: 'Phone operators', icon: ICONS.phone,   cap: 'number_of_telephone_operators' },
+  { key: 'cooks',      name: 'Cooks',           icon: ICONS.chef,    cap: 'number_of_cooks' },
+  { key: 'ovens',      name: 'Ovens',           icon: ICONS.flame,   cap: 'number_of_ovens' },
+  { key: 'packers',    name: 'Packing',         icon: ICONS.box,     cap: 'number_of_packers' },
+  { key: 'deliverers', name: 'Delivery',        icon: ICONS.scooter, cap: 'number_of_deliverers' },
 ];
 
 // ====== rand_r equivalent (same LCG as the C Windows fallback) ======
@@ -245,7 +301,6 @@ function makeRand(seed) {
 // ====== State ======
 let state = null;
 let running = false;
-const els = {};
 
 function buildUI() {
   const sc = document.getElementById('stations');
@@ -255,9 +310,9 @@ function buildUI() {
     const div = document.createElement('div');
     div.className = 'station';
     div.innerHTML = `
-      <div class="icon">${st.icon}</div>
+      <div class="badge">${st.icon}</div>
       <h3>${st.name}</h3>
-      <div class="cap">free: <b id="free-${st.key}">${cap}</b> / ${cap}</div>
+      <div class="cap">free <b id="free-${st.key}">${cap}</b> / ${cap}</div>
       <div class="bar"><span id="bar-${st.key}" style="width:100%"></span></div>
       <div class="queue" id="q-${st.key}"></div>
     `;
@@ -268,9 +323,9 @@ function buildUI() {
     { id: 'revenue', l: 'Revenue ($)', cls: 'profit', v: 0 },
     { id: 'success', l: 'Successful', cls: '', v: 0 },
     { id: 'fail', l: 'Cancelled', cls: 'fail', v: 0 },
-    { id: 'margarita', l: '🍕 Margarita', cls: '', v: 0 },
-    { id: 'pepperone', l: '🍕 Pepperoni', cls: '', v: 0 },
-    { id: 'special', l: '🍕 Special', cls: '', v: 0 },
+    { id: 'margarita', l: 'Margarita', cls: '', v: 0 },
+    { id: 'pepperone', l: 'Pepperoni', cls: '', v: 0 },
+    { id: 'special', l: 'Special', cls: '', v: 0 },
     { id: 'avgservice', l: 'Avg. service time', cls: '', v: '–' },
     { id: 'active', l: 'Active', cls: '', v: 0 },
   ];
@@ -310,7 +365,7 @@ function refresh() {
     document.getElementById('bar-' + st.key).style.width = (free / cap * 100) + '%';
     const q = document.getElementById('q-' + st.key);
     q.innerHTML = state.queues[st.key].map(p =>
-      `<div class="pizza" title="order #${p.id}" style="background:${p.color}">${p.emoji}</div>`
+      `<div class="dot" title="order #${p.id}" style="background:${p.color};--dot:${p.color}"></div>`
     ).join('');
   });
   set('revenue', state.revenue);
@@ -356,12 +411,12 @@ function dequeue(key, p) {
   refresh();
 }
 
-const PIZZA_COLORS = { margarita: '#ffd166', pepperone: '#ef476f', special: '#06d6a0' };
+const PIZZA_COLORS = { margarita: '#ffb547', pepperone: '#ff5470', special: '#45e0a0' };
 
 async function customer(id, rand) {
   state.active++; refresh();
   const startService = performance.now();
-  const token = { id, emoji: '🧾', color: '#8888ff' };
+  const token = { id, color: '#6aa6ff' };
 
   // --- telephone operator ---
   enqueue('operators', token);
@@ -380,7 +435,7 @@ async function customer(id, rand) {
     state.fail++;
     release('operators');
     state.active--;
-    log(`Order #${id} got cancelled (payment declined)`, 'bad');
+    log(`Order #${id} cancelled (payment declined)`, 'bad');
     refresh();
     return;
   }
@@ -389,9 +444,9 @@ async function customer(id, rand) {
   state.revenue += nMarg * CONFIG.cost_of_margarita + nPep * CONFIG.cost_of_pepperone + nSpec * CONFIG.cost_of_special;
   state.margarita += nMarg; state.pepperone += nPep; state.special += nSpec;
   release('operators');
-  log(`Order #${id} added — ${numPizzas} pizzas (M:${nMarg} P:${nPep} S:${nSpec})`, 'ok');
+  log(`Order #${id} added  —  ${numPizzas} pizzas (M:${nMarg} P:${nPep} S:${nSpec})`, 'ok');
 
-  const pizza = { id, emoji: '🍕', color: PIZZA_COLORS.margarita };
+  const pizza = { id, color: PIZZA_COLORS.margarita };
 
   // --- cook ---
   enqueue('cooks', pizza);
@@ -427,7 +482,7 @@ async function customer(id, rand) {
   const serviceMin = (endService - startService) / (1000 / Math.max(1, +document.getElementById('speed').value));
   state.sumService += serviceMin;
   state.active--;
-  log(`Order #${id} delivered — service ~${serviceMin.toFixed(1)}m`, 'info');
+  log(`Order #${id} delivered  —  service ~${serviceMin.toFixed(1)}m`, 'info');
   refresh();
 }
 
@@ -441,7 +496,7 @@ async function run() {
   const seed = +document.getElementById('seed').value || 1;
   const rand = makeRand(seed);
 
-  log(`▶ Starting simulation: ${n} customers, seed=${seed}`, 'info');
+  log(`Starting simulation: ${n} customers, seed=${seed}`, 'head');
 
   const tasks = [];
   for (let i = 1; i <= n; i++) {
@@ -450,12 +505,12 @@ async function run() {
   }
   await Promise.all(tasks);
 
-  log('────────────────────────', 'info');
+  log('────────────────────────────', 'rule');
   log(`Total revenue: ${state.revenue} $`, 'ok');
-  log(`Successful: ${state.success} | Cancelled: ${state.fail}`, 'info');
-  log(`Pizzas — Margarita:${state.margarita} Pepperoni:${state.pepperone} Special:${state.special}`, 'info');
+  log(`Successful: ${state.success}   Cancelled: ${state.fail}`, 'info');
+  log(`Pizzas — Margarita:${state.margarita}  Pepperoni:${state.pepperone}  Special:${state.special}`, 'info');
   if (state.success) log(`Average service time: ${(state.sumService / state.success).toFixed(2)}m`, 'info');
-  log('✔ Completed', 'ok');
+  log('Completed', 'head');
 
   running = false;
   document.getElementById('startBtn').disabled = false;
